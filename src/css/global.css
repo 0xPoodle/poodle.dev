@@ -1,0 +1,66 @@
+:root[data-theme="dark"] {
+  /* Base colors */
+  --color-bg: #0D0F1A;               /* Deep night */
+  --color-text: #ffffff;             /* Pure white */
+  --color-text-muted: rgba(255,255,255,0.6);
+
+  /* Accents */
+  --color-accent: #D0F205;           /* Electric Slime */
+  --color-accent2: #5DF5C9;          /* Minty Plasma */
+  --color-pop: #FF3B81;              /* Neon Cherry */
+  --color-steel: #404756;            /* Smoky Steel */
+
+  /* Utility colors */
+  --color-panel: rgba(255, 255, 255, 0.05);   /* Translucent panel */
+  --color-border: rgba(255, 255, 255, 0.1);   /* Faint borders */
+  --color-glow: rgba(208, 242, 5, 0.3);       /* Soft glow effect */
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  background: #0f0f0f;
+
+  --font-display: 'Clash Display', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+}
+
+#canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  filter: blur(24px);
+}
+
+
+.glass {
+  border-radius: 50%;
+  box-shadow: inset 0 0 50px #fff,
+  inset 20px 0 60px #ee82ee,
+  inset -20px 0 60px #0ff,
+  inset 20px 0 300px #ee82ee,
+  inset -20 0 300px #0ff,
+
+  0 0 5px #fff,
+  -10px 0 60px #ee82ee,
+  10px 0 60px #0ff;
+
+  animation: glass 2s infinite;
+}
+
+@keyframes glass {
+  0% {
+    transform: rotate(0);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    filter: hue-rotate(100deg);
+  }
+  0% {
+    transform: rotate(0);
+    filter: hue-rotate(0deg);
+  }
+}
