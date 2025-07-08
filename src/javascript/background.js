@@ -5,8 +5,7 @@ let width = canvas.width = window.innerWidth;
 let height = canvas.height = window.innerHeight;
 let time = 0;
 
-// Performance optimization: reduce resolution for calculations
-const RESOLUTION_SCALE = 0.05; // Quarter resolution for calculations
+const RESOLUTION_SCALE = 0.05;
 let calcWidth = Math.floor(width * RESOLUTION_SCALE);
 let calcHeight = Math.floor(height * RESOLUTION_SCALE);
 
@@ -17,6 +16,7 @@ window.addEventListener('resize', () => {
     calcHeight = Math.floor(height * RESOLUTION_SCALE);
     if (width > 0 && height > 0) {
         updateCircleScale();
+        updateClipping();
     }
 });
 
@@ -43,7 +43,7 @@ function createCircles() {
             radius: baseRadius + Math.random() * (60 * scaleFactor),
             baseRadius: baseRadius + Math.random() * (60 * scaleFactor),
             hueOffset: Math.random(),
-            // Pre-calculate scaled positions for performance
+
             scaledX: 0,
             scaledY: 0,
             scaledRadius: 0
@@ -64,14 +64,14 @@ function updateCircleScale() {
 
 // PARTY COLORS ONLY! 🎉
 const THEME_COLORS = [
-    [208, 242, 5],   // Electric Slime #D0F205 - NEON GREEN!
-    [93, 245, 201],  // Minty Plasma #5DF5C9 - ELECTRIC MINT!
-    [255, 59, 129],  // Neon Cherry #FF3B81 - HOT PINK!
-    [238, 130, 238], // Violet (from glass effect) - ELECTRIC PURPLE!
-    [0, 255, 255],   // Cyan (from glass effect) - LASER BLUE!
+    [208, 242, 5],
+    [93, 245, 201],
+    [255, 59, 129],
+    [238, 130, 238], 
+    [0, 255, 255],
 ];
 
-// Pre-calculate color lookup table for better performance
+// Pre-calculate color lookup table
 const COLOR_LUT_SIZE = 256;
 let colorLUT = [];
 
@@ -81,7 +81,6 @@ function buildColorLUT() {
         const phase = i / COLOR_LUT_SIZE;
         const numColors = THEME_COLORS.length;
         
-        // Cycle through theme colors with smooth transitions
         const colorIndex = phase * numColors;
         const baseIndex = Math.floor(colorIndex) % numColors;
         const nextIndex = (baseIndex + 1) % numColors;
@@ -90,7 +89,6 @@ function buildColorLUT() {
         const baseColor = THEME_COLORS[baseIndex];
         const nextColor = THEME_COLORS[nextIndex];
         
-        // Smooth interpolation between colors
         const r = Math.floor(baseColor[0] * (1 - blend) + nextColor[0] * blend);
         const g = Math.floor(baseColor[1] * (1 - blend) + nextColor[1] * blend);
         const b = Math.floor(baseColor[2] * (1 - blend) + nextColor[2] * blend);
@@ -108,7 +106,6 @@ function getColor(hueOffset, timeOffset) {
 function drawMetaballs() {
     if (width <= 0 || height <= 0) return;
     
-    // Update scaled positions
     const scaleX = calcWidth / width;
     const scaleY = calcHeight / height;
     
@@ -124,14 +121,12 @@ function drawMetaballs() {
     time += 0.005;
     const timeOffset = time * 3;
     
-    // Process in larger steps for better performance
     for (let x = 0; x < calcWidth; x += 1) {
         for (let y = 0; y < calcHeight; y += 1) {
             let sum = 0;
             let weightedR = 0, weightedG = 0, weightedB = 0;
             let totalWeight = 0;
             
-            // Calculate influence from all circles
             for (let i = 0; i < circles.length; i++) {
                 const circle = circles[i];
                 const dx = x - circle.scaledX;
@@ -143,7 +138,6 @@ function drawMetaballs() {
                     const influence = radiusSq / distSq;
                     sum += influence;
                     
-                    // Weight the color contribution
                     const weight = influence / (Math.sqrt(distSq) * 0.1 + 1);
                     
                     const [r, g, b] = getColor(circle.hueOffset, timeOffset);
@@ -160,12 +154,10 @@ function drawMetaballs() {
                 const intensity = Math.min(1, (sum - threshold) * 1.5);
                 const pixelIndex = (y * calcWidth + x) * 4;
                 
-                // Calculate blended colors
                 const finalR = totalWeight > 0 ? Math.floor((weightedR / totalWeight) * intensity) : 0;
                 const finalG = totalWeight > 0 ? Math.floor((weightedG / totalWeight) * intensity) : 0;
                 const finalB = totalWeight > 0 ? Math.floor((weightedB / totalWeight) * intensity) : 0;
                 
-                // Enhanced shimmer effect with theme colors
                 const shimmer = 1 + 0.15 * Math.sin(time * 15 + x * 0.05 + y * 0.05);
                 const r = Math.min(255, Math.floor(finalR * shimmer));
                 const g = Math.min(255, Math.floor(finalG * shimmer));
@@ -181,21 +173,18 @@ function drawMetaballs() {
         }
     }
     
-    // Scale up the low-res calculation to full screen
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = calcWidth;
     tempCanvas.height = calcHeight;
     const tempCtx = tempCanvas.getContext('2d');
     tempCtx.putImageData(imageData, 0, 0);
-    
-    // Use smooth scaling to upscale
+
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(tempCanvas, 0, 0, calcWidth, calcHeight, 0, 0, width, height);
 }
 
 function addGlowEffect() {
-    // Enhanced glow effect with theme colors
     ctx.globalCompositeOperation = 'screen';
     ctx.filter = 'blur(12px)';
     
@@ -220,29 +209,83 @@ function addGlowEffect() {
     ctx.globalCompositeOperation = 'source-over';
 }
 
+function updateClipping() {
+    const clipElements = document.querySelectorAll('[id="background-clip"]');
+    const clippedElements = document.querySelectorAll('*:not([id="background-clip"]):not(html):not(head):not(body):not(script):not(style)');
+    
+    if (clipElements.length === 0) {
+        clippedElements.forEach(el => {
+            el.style.clipPath = 'none';
+        });
+        return;
+    }
+    
+    clippedElements.forEach(el => {
+        if (el === document.documentElement || el === document.body || el === canvas) {
+            return;
+        }
+        
+        const elRect = el.getBoundingClientRect();
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        
+        const elLeft = elRect.left + scrollX;
+        const elTop = elRect.top + scrollY;
+        
+        let hasIntersection = false;
+        
+        clipElements.forEach(clipEl => {
+            const clipRect = clipEl.getBoundingClientRect();
+            
+            const clipLeft = clipRect.left + scrollX;
+            const clipTop = clipRect.top + scrollY;
+            const clipRight = clipLeft + clipRect.width;
+            const clipBottom = clipTop + clipRect.height;
+            
+            // Check if there's an intersection
+            if (clipRight > elLeft && clipLeft < elLeft + elRect.width &&
+                clipBottom > elTop && clipTop < elTop + elRect.height) {
+                
+                // Calculate intersection relative to element
+                const relativeLeft = Math.max(0, clipLeft - elLeft);
+                const relativeTop = Math.max(0, clipTop - elTop);
+                const relativeRight = Math.min(elRect.width, clipRight - elLeft);
+                const relativeBottom = Math.min(elRect.height, clipBottom - elTop);
+                
+                // Convert to percentages
+                const leftPercent = (relativeLeft / elRect.width) * 100;
+                const topPercent = (relativeTop / elRect.height) * 100;
+                const rightPercent = (relativeRight / elRect.width) * 100;
+                const bottomPercent = (relativeBottom / elRect.height) * 100;
+                
+                el.style.clipPath = `polygon(${leftPercent}% ${topPercent}%, ${rightPercent}% ${topPercent}%, ${rightPercent}% ${bottomPercent}%, ${leftPercent}% ${bottomPercent}%)`;
+                hasIntersection = true;
+            }
+        });
+        
+        if (!hasIntersection) {
+            el.style.clipPath = 'polygon(0% 0%, 0% 0%, 0% 0%, 0% 0%)';
+        }
+    });
+}
+
 function draw() {
     if (width <= 0 || height <= 0) {
         requestAnimationFrame(draw);
         return;
     }
     
-    // Clear with theme background
     ctx.clearRect(0, 0, width, height);
-    
-    // Draw metaballs
+
     drawMetaballs();
-    
-    // Add glow effect
     addGlowEffect();
     
-    // Update circle positions with improved physics
     for (let circle of circles) {
         circle.x += circle.vx;
         circle.y += circle.vy;
         
         const margin = circle.radius * 0.5;
         
-        // Smoother boundary physics
         if (circle.x < margin) {
             circle.vx += (margin - circle.x) * 0.02;
         } else if (circle.x > width - margin) {
@@ -255,7 +298,6 @@ function draw() {
             circle.vy -= (circle.y - (height - margin)) * 0.02;
         }
         
-        // Add some randomness
         circle.vx += (Math.random() - 0.5) * 0.1;
         circle.vy += (Math.random() - 0.5) * 0.1;
         
@@ -277,6 +319,9 @@ function draw() {
 
 // Initialize
 buildColorLUT();
+updateClipping();
+window.addEventListener('resize', updateClipping);
+window.addEventListener('scroll', updateClipping);
 
 if (width > 0 && height > 0) {
     createCircles();
