@@ -1,0 +1,82 @@
+body, html {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    font-family: 'Heebo', sans-serif;
+    font-optical-sizing: auto;
+    font-size: var(--font-reg);
+    color: var(--text);
+    background-color: var(--background);
+    overflow-x: hidden;
+}
+
+:root {
+    --font-xs: 0.75rem;
+    --font-s: 0.875rem;
+    --font-reg: 1rem;
+    --font-l: 1.125rem;
+    --font-xl: 1.5rem;
+    --font-xxl: 2rem;
+
+    --margin-xs: 0.25rem;
+    --margin-s: 0.5rem;
+    --margin-reg: 1rem;
+    --margin-l: 1.5rem;
+    --margin-xl: 2rem;
+    --margin-xxl: 3rem;
+
+    --padding-xs: 0.25rem;
+    --padding-s: 0.5rem;
+    --padding-reg: 1rem;
+    --padding-l: 1.5rem;
+    --padding-xl: 2rem;
+    --padding-xxl: 3rem;
+}
+
+:root[data-theme="light"] {
+    --text: hsl(230, 49%, 10%);
+    --background: hsl(0, 0%, 95%);
+    --accent: hsl(230, 33%, 75%);
+}
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme]) {
+        --text: hsl(230, 49%, 10%);
+        --background: hsl(0, 0%, 95%);
+        --accent: hsl(230, 33%, 75%);
+    }
+}
+
+:root[data-theme="dark"] {
+    --text: hsl(230, 49%, 90%);
+    --background: hsl(0, 0%, 5%);
+    --accent: hsl(230, 33%, 25%);
+
+    --background-2: hsl(0, 0%, 15%);
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        --text: hsl(230, 49%, 90%);
+        --background: hsl(0, 0%, 5%);
+        --accent: hsl(230, 33%, 25%);
+
+        --background-2: hsl(0, 0%, 15%);
+    }
+}
+
+header {
+    width: 50%;
+    max-width: 1920px; /* Placeholder! */
+    margin: var(--margin-reg);
+}
+
+main {
+    /* One-pager */
+}
+
+
+footer {
+    /* Contact, git report, copyright */
+}
